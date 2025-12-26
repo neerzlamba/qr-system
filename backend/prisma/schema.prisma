@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  
+  qrCodes      QRCode[]
+
+  @@map("users")
+}
+
+model QRCode {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  content     String   @db.Text
+  name        String
+  description String?
+  imageData   String   @map("image_data") @db.Text
+  format      String   @default("png")
+  size        Int      @default(300)
+  errorCorrectionLevel String @default("M") @map("error_correction_level")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("qr_codes")
+  @@index([userId])
+}
